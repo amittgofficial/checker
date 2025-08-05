@@ -1,178 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Number Cleaner Tool</title>
+  <meta charset="UTF-8">
+  <title>Fast Number Sorter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
       padding: 20px;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #e0f7fa, #e1bee7);
-      color: #333;
     }
-
-    h2 {
-      text-align: center;
-      color: #4a148c;
-    }
-
     textarea {
       width: 100%;
-      height: 150px;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-      resize: vertical;
-    }
-
-    button {
-      background-color: #7b1fa2;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      margin-top: 15px;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 100%;
-      cursor: pointer;
-      transition: 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #4a148c;
-    }
-
-    .output, .duplicates, .invalids {
-      background: white;
-      padding: 15px;
-      margin-top: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .label {
-      font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
-      color: #6a1b9a;
-    }
-
-    .copy-btn {
-      background: #26a69a;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
+      height: 300px;
       font-size: 14px;
-      cursor: pointer;
+      padding: 10px;
+    }
+    button {
       margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
       width: 100%;
+      cursor: pointer;
     }
-
-    ol {
-      padding-left: 20px;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .copy-btn {
-        width: 100%;
-      }
+    #output {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      white-space: pre-line;
+      max-height: 300px;
+      overflow-y: auto;
     }
   </style>
 </head>
 <body>
 
-  <h2>📱 Number Cleaner Tool</h2>
+  <h2>🔢 Big List Number Sorter</h2>
 
-  <textarea id="numberInput" placeholder="Paste numbers here..."></textarea>
-  <button onclick="processNumbers()">🧹 Clean Numbers</button>
+  <textarea id="input" placeholder="Paste 1000+ numbers here (one per line)"></textarea>
+  <button onclick="sortBigList()">Sort Now</button>
 
-  <div class="output">
-    <span class="label">
-      ✅ Cleaned Numbers: <span id="cleanCount">0</span>
-    </span>
-    <input type="hidden" id="cleanOutput">
-
-    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy Clean Numbers</button>
-    <button class="copy-btn" onclick="redirectWithNumbers()">🔁 Send to Snapwallet</button>
-  </div>
-
-  <div class="duplicates">
-    <span class="label">❌ Duplicate Numbers (<span id="dupCount">0</span>):</span>
-    <ol id="duplicateOutput"></ol>
-  </div>
-
-  <div class="invalids">
-    <span class="label">🚫 Invalid Numbers (<span id="invalidCount">0</span>):</span>
-    <p id="invalidOutput"></p>
-  </div>
+  <div id="output"></div>
 
   <script>
-    function processNumbers() {
-      const input = document.getElementById("numberInput").value;
-      const rawNumbers = input.split(/[\s,]+/);
-      const valid = [];
-      const invalid = [];
-      const seen = new Set();
-      const duplicates = new Set();
-      const finalCleaned = [];
+    function sortBigList() {
+      const input = document.getElementById("input").value.trim();
+      const numbers = input
+        .split('\n')
+        .map(n => parseFloat(n.trim()))
+        .filter(n => !isNaN(n));
 
-      for (let num of rawNumbers) {
-        num = num.replace(/\D/g, ""); // Remove non-digits
-        if (num.length === 10) {
-          if (seen.has(num)) {
-            duplicates.add(num);
-          } else {
-            seen.add(num);
-            finalCleaned.push(num);
-          }
-        } else if (num.length > 0) {
-          invalid.push(num);
-        }
-      }
+      numbers.sort((a, b) => a - b);
 
-      document.getElementById("cleanOutput").value = finalCleaned.join(",");
-      document.getElementById("cleanCount").textContent = finalCleaned.length;
-
-      const dupList = Array.from(duplicates);
-      const dupOutput = document.getElementById("duplicateOutput");
-      dupOutput.innerHTML = '';
-      dupList.forEach(num => {
-        const li = document.createElement("li");
-        li.textContent = num;
-        dupOutput.appendChild(li);
-      });
-      document.getElementById("dupCount").textContent = dupList.length;
-
-      document.getElementById("invalidOutput").textContent = invalid.join(", ");
-      document.getElementById("invalidCount").textContent = invalid.length;
-    }
-
-    function copyToClipboard() {
-      const text = document.getElementById("cleanOutput").value;
-      if (!text) {
-        alert("⚠️ No cleaned numbers to copy.");
-        return;
-      }
-      navigator.clipboard.writeText(text).then(() => {
-        alert("✅ Clean numbers copied!");
-      });
-    }
-
-    function redirectWithNumbers() {
-      const text = document.getElementById("cleanOutput").value;
-      if (!text) {
-        alert("⚠️ No cleaned numbers found. Please run cleaning first.");
-        return;
-      }
-      const encoded = encodeURIComponent(text);
-      const targetUrl = `https://snapwallet.in/view-number-tools?numbers=${encoded}`;
-      window.location.href = targetUrl;
+      document.getElementById("output").innerText = numbers.join('\n');
     }
   </script>
 
